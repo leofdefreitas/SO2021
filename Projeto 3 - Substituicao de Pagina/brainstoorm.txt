@@ -1,0 +1,15 @@
+- array de struct de numeros de 8 bits + aging (valor do numero em decimal)
+
+- funcao calcular aging (transforma binario em decimal)
+
+- Tamanho MV = quantidade de páginas (tamanho do array de structs)
+
+- Bits R = quantidade de paginas (MV)
+
+
+- struct:
+Id página - int
+Posição na memoria principal - int (-1 se nao estiver na memoria principal)
+Contador - array<int> (ou numero bit)
+
+MV - Array de struct

@@ -1,0 +1,2 @@
+- quando pagina sai da memoria real para memoria virtual, reseta contador?
+- swap memory?
