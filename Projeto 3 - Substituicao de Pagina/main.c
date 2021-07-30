@@ -6,8 +6,8 @@
 
 typedef struct page {
     int id;
-    int positionInRealMemory;
-    int positionInSwapMemory;
+    int positionInRealMemory; 
+    int positionInSwapMemory; 
     uint8_t relevancy;
 } page;
 
@@ -77,7 +77,7 @@ void initializeNFUAlgorithm(int vmSize, int rmSize, int clock) {
     for (int i=0; i < clock; i++) {
         for (int j=0; j < vmSize; j++) {
             R[j] = rand() % 2;
-            virtualMemory[j].relevancy = (virtualMemory[j].relevancy >> 1) + R[j]*(mostSignificantBit); 
+            virtualMemory[j].relevancy = (virtualMemory[j].relevancy >> 1) + R[j]*(mostSignificantBit);
             if (R[j] == 1) printf("Page %d will be used on clock %d.\n", j, i);
         }
         printf("Memoria Virtual com relevancias aplicadas:\n");
@@ -91,12 +91,8 @@ void initializeNFUAlgorithm(int vmSize, int rmSize, int clock) {
                  * Otherwise, finds the least frequently used page on the memory and swaps it with the requested page on the swap memory.
                  */
                 if (virtualMemory[j].positionInRealMemory == -1) {
-                    /* virtualMemory[j].relevancy = (virtualMemory[j].relevancy >> 1) + UINT8_MAX/2;
-                    printf("Page was already on real memory. It was succesfully used and its relevancy was updated.\n"); */
-                //} else {
+
                     page leastFrequentlyUsedPage = findLeastFrequentlyUsedPage(virtualMemory, vmSize, rmSize);
-                    printf("LFU Page:\n");
-                    printPage(leastFrequentlyUsedPage);
                     page auxiliarySwapPage = virtualMemory[j];
 
                     virtualMemory[j].positionInRealMemory = leastFrequentlyUsedPage.positionInRealMemory;
@@ -105,7 +101,7 @@ void initializeNFUAlgorithm(int vmSize, int rmSize, int clock) {
                     virtualMemory[leastFrequentlyUsedPage.id].positionInRealMemory = -1;
                     virtualMemory[leastFrequentlyUsedPage.id].positionInSwapMemory = auxiliarySwapPage.positionInSwapMemory;
                     
-                    printf("Page %d swapped places with page %d, who was the LFU page.\n", j, leastFrequentlyUsedPage.id);
+                    printf("Page %d swapped places with page %d, who was the LFU page on the real memory.\n", j, leastFrequentlyUsedPage.id);
                 }
             }
         }
