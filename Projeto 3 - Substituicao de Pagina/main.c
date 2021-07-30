@@ -121,7 +121,7 @@ void initializeNFUAlgorithm(int vmSize, int rmSize, int clock) {
         printMemory(virtualMemory, vmSize);
     }
     //adicionar entradas no .csv
-    fprintf(f, "virtualMemorySize, realMemorySize, amountOfClockTick, smissCount, hitCount\n");
+    fprintf(f, "virtualMemorySize, realMemorySize, amountOfClockTicks, missCount, hitCount\n");
     fprintf(f, "%d, %d, %d, %d, %d\n", vmSize, rmSize, clock, missCount, hitCount);
 }
 
