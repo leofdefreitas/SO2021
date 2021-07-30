@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <time.h>
+
 #define mostSignificantBit (UINT8_MAX/2)+1
 
 typedef struct page {
@@ -36,6 +37,8 @@ void printMemory(page *memory, int size);
  */
 void printPage(page page);
 
+FILE *f;
+
 int main() {
     int vmSize, rmSize, clock;
     printf("To initialize the simulation of the Not Frequently Used Algorithm, please enter:\n- Size of the Virtual Memory (VM);\n- The size of the Real Memory (RM);\n- The amount of clocks you want the algorithm to run for.\n");
@@ -59,30 +62,37 @@ page initializePage(int pageId, int positionInRealMemory, int positionInSwapMemo
 }
 
 void initializeNFUAlgorithm(int vmSize, int rmSize, int clock) {
-    srand(time(NULL)); 
+    f = fopen("output.csv", "w");
+    if (f == NULL) {
+        printf("Failed to open csv file");
+    }
+    int missCount = 0;
+    int hitCount = 0;
+
+    srand(time(NULL));
     page *virtualMemory = malloc(sizeof(page) * vmSize);
     int *R = malloc(sizeof(int) * vmSize);
 
     //Populates virtualMemory with newly created pages
-    for (int i=0; i < vmSize; i++) {
+    for (int i = 0; i < vmSize; i++) {
         int positionInRealMemory = (i < rmSize) ? i : -1;
-        int positionInSwapMemory = (i >= rmSize) ? i-rmSize : -1;
+        int positionInSwapMemory = (i >= rmSize) ? i - rmSize : -1;
         virtualMemory[i] = initializePage(i, positionInRealMemory, positionInSwapMemory);
     }
-    
+
     printf("Memoria Virtual montada:\n");
     printMemory(virtualMemory, vmSize);
-    
+
     //Runs the Not Frequently Used Algorithm for as many times as the user wishes
-    for (int i=0; i < clock; i++) {
-        for (int j=0; j < vmSize; j++) {
+    for (int i = 0; i < clock; i++) {
+        for (int j = 0; j < vmSize; j++) {
             R[j] = rand() % 2;
-            virtualMemory[j].relevancy = (virtualMemory[j].relevancy >> 1) + R[j]*(mostSignificantBit);
+            virtualMemory[j].relevancy = (virtualMemory[j].relevancy >> 1) + R[j] * (mostSignificantBit);
             if (R[j] == 1) printf("Page %d will be used on clock %d.\n", j, i);
         }
         printf("Memoria Virtual com relevancias aplicadas:\n");
         printMemory(virtualMemory, vmSize);
-        for (int j=0; j < vmSize; j++) {
+        for (int j = 0; j < vmSize; j++) {
             //For each page, randomly decides if it is going to be accessed during this clock
             if (R[j] == 1) {
                 printf("Attempting to use page %d on clock number %d...\n", j, i);
@@ -91,30 +101,35 @@ void initializeNFUAlgorithm(int vmSize, int rmSize, int clock) {
                  * Otherwise, finds the least frequently used page on the memory and swaps it with the requested page on the swap memory.
                  */
                 if (virtualMemory[j].positionInRealMemory == -1) {
-
                     page leastFrequentlyUsedPage = findLeastFrequentlyUsedPage(virtualMemory, vmSize, rmSize);
                     page auxiliarySwapPage = virtualMemory[j];
+                    missCount++;
 
                     virtualMemory[j].positionInRealMemory = leastFrequentlyUsedPage.positionInRealMemory;
                     virtualMemory[j].positionInSwapMemory = -1;
 
                     virtualMemory[leastFrequentlyUsedPage.id].positionInRealMemory = -1;
                     virtualMemory[leastFrequentlyUsedPage.id].positionInSwapMemory = auxiliarySwapPage.positionInSwapMemory;
-                    
-                    printf("Page %d swapped places with page %d, who was the LFU page on the real memory.\n", j, leastFrequentlyUsedPage.id);
+                    printf("Page %d swapped places with page %d, who was the LFU page.\n", j,
+                           leastFrequentlyUsedPage.id);
+                } else {
+                    hitCount++;
                 }
             }
         }
         printf("Memoria Virtual apos todos os swaps do clock:\n");
         printMemory(virtualMemory, vmSize);
     }
+    fprintf(f, "missCount, hitCount \n");
+    fprintf(f, "%d, %d\n", missCount, hitCount);
 }
 
 page findLeastFrequentlyUsedPage(page *virtualMemory, int vmSize, int rmSize) {
-    page leastFrequentlyUsedPage = initializePage(vmSize, rmSize, vmSize-rmSize);
+    page leastFrequentlyUsedPage = initializePage(vmSize, rmSize, vmSize - rmSize);
     leastFrequentlyUsedPage.relevancy = UINT8_MAX;
-    for (int i=0; i < vmSize; i++) {
-        if (virtualMemory[i].positionInRealMemory >= 0 && virtualMemory[i].relevancy < leastFrequentlyUsedPage.relevancy) {
+    for (int i = 0; i < vmSize; i++) {
+        if (virtualMemory[i].positionInRealMemory >= 0 &&
+            virtualMemory[i].relevancy < leastFrequentlyUsedPage.relevancy) {
             leastFrequentlyUsedPage = virtualMemory[i];
         }
     }
@@ -123,12 +138,13 @@ page findLeastFrequentlyUsedPage(page *virtualMemory, int vmSize, int rmSize) {
 
 void printMemory(page *memory, int size) {
     printf("================================================================================================\n");
-    for (int i=0; i<size; i++) {
+    for (int i = 0; i < size; i++) {
         printPage(memory[i]);
     }
     printf("================================================================================================\n");
 }
 
 void printPage(page page) {
-    printf("| ID: %-5d | Position in Real Memory: %-5d | Position in Swap Memory: %-5d | Relevancy: %-3d |\n", page.id, page.positionInRealMemory, page.positionInSwapMemory, page.relevancy);
+    printf("| ID: %-5d | Position in Real Memory: %-5d | Position in Swap Memory: %-5d | Relevancy: %-3d |\n", page.id,
+           page.positionInRealMemory, page.positionInSwapMemory, page.relevancy);
 }
