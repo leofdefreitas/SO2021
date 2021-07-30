@@ -7,8 +7,8 @@
 
 typedef struct page {
     int id;
-    int positionInRealMemory;
-    int positionInSwapMemory;
+    int positionInRealMemory; 
+    int positionInSwapMemory; 
     uint8_t relevancy;
 } page;
 
@@ -101,12 +101,7 @@ void initializeNFUAlgorithm(int vmSize, int rmSize, int clock) {
                  * Otherwise, finds the least frequently used page on the memory and swaps it with the requested page on the swap memory.
                  */
                 if (virtualMemory[j].positionInRealMemory == -1) {
-                    /* virtualMemory[j].relevancy = (virtualMemory[j].relevancy >> 1) + UINT8_MAX/2;
-                    printf("Page was already on real memory. It was succesfully used and its relevancy was updated.\n"); */
-                    //} else {
                     page leastFrequentlyUsedPage = findLeastFrequentlyUsedPage(virtualMemory, vmSize, rmSize);
-                    printf("LFU Page:\n");
-                    printPage(leastFrequentlyUsedPage);
                     page auxiliarySwapPage = virtualMemory[j];
                     missCount++;
 
@@ -115,7 +110,6 @@ void initializeNFUAlgorithm(int vmSize, int rmSize, int clock) {
 
                     virtualMemory[leastFrequentlyUsedPage.id].positionInRealMemory = -1;
                     virtualMemory[leastFrequentlyUsedPage.id].positionInSwapMemory = auxiliarySwapPage.positionInSwapMemory;
-
                     printf("Page %d swapped places with page %d, who was the LFU page.\n", j,
                            leastFrequentlyUsedPage.id);
                 } else {
