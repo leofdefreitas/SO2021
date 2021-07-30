@@ -120,8 +120,9 @@ void initializeNFUAlgorithm(int vmSize, int rmSize, int clock) {
         printf("Memoria Virtual apos todos os swaps do clock:\n");
         printMemory(virtualMemory, vmSize);
     }
-    fprintf(f, "missCount, hitCount \n");
-    fprintf(f, "%d, %d\n", missCount, hitCount);
+    //adicionar entradas no .csv
+    fprintf(f, "virtualMemorySize, realMemorySize, amountOfClockTick, smissCount, hitCount\n");
+    fprintf(f, "%d, %d, %d, %d, %d\n", vmSize, rmSize, clock, missCount, hitCount);
 }
 
 page findLeastFrequentlyUsedPage(page *virtualMemory, int vmSize, int rmSize) {
