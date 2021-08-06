@@ -7,8 +7,8 @@
 
 typedef struct page {
     int id;
-    int positionInRealMemory; 
-    int positionInSwapMemory; 
+    int positionInRealMemory;
+    int positionInSwapMemory;
     uint8_t relevancy;
 } page;
 
@@ -37,7 +37,18 @@ void printMemory(page *memory, int size);
  */
 void printPage(page page);
 
+/*
+ * Auxiliary function used for analysis
+ */
+void nfuaAlgorithmAnalysis(int vmSize, int rmSize, int clocks, int interactions);
+
+/*
+ * Auxiliary function used to get and random based on the relevancy
+ */
+int biasedRand(double relevancy);
+
 FILE *f;
+
 
 int main() {
     int vmSize, rmSize, clock;
@@ -48,7 +59,9 @@ int main() {
         printf("Virtual Memory must be bigger than real memory. Please try again.\n");
         exit(0);
     }
+    f = fopen("output.csv", "w");
     initializeNFUAlgorithm(vmSize, rmSize, clock);
+//    nfuaAlgorithmAnalysis(vmSize, rmSize, clock, 20);
     return 0;
 }
 
@@ -62,10 +75,8 @@ page initializePage(int pageId, int positionInRealMemory, int positionInSwapMemo
 }
 
 void initializeNFUAlgorithm(int vmSize, int rmSize, int clock) {
-    f = fopen("output.csv", "w");
-    if (f == NULL) {
-        printf("Failed to open csv file");
-    }
+    fprintf(f, "clockTick,hitCount,missCount\n");
+
     int missCount = 0;
     int hitCount = 0;
 
@@ -86,7 +97,9 @@ void initializeNFUAlgorithm(int vmSize, int rmSize, int clock) {
     //Runs the Not Frequently Used Algorithm for as many times as the user wishes
     for (int i = 0; i < clock; i++) {
         for (int j = 0; j < vmSize; j++) {
-            R[j] = rand() % 2;
+            R[j] = biasedRand((double) (virtualMemory[j].relevancy));
+//            R[j] = rand() % 2;
+
             virtualMemory[j].relevancy = (virtualMemory[j].relevancy >> 1) + R[j] * (mostSignificantBit);
             if (R[j] == 1) printf("Page %d will be used on clock %d.\n", j, i);
         }
@@ -119,10 +132,9 @@ void initializeNFUAlgorithm(int vmSize, int rmSize, int clock) {
         }
         printf("Memoria Virtual apos todos os swaps do clock:\n");
         printMemory(virtualMemory, vmSize);
+
+        fprintf(f, "%d, %d, %d\n", i, hitCount, missCount);
     }
-    //adicionar entradas no .csv
-    fprintf(f, "virtualMemorySize, realMemorySize, amountOfClockTicks, missCount, hitCount\n");
-    fprintf(f, "%d, %d, %d, %d, %d\n", vmSize, rmSize, clock, missCount, hitCount);
 }
 
 page findLeastFrequentlyUsedPage(page *virtualMemory, int vmSize, int rmSize) {
@@ -148,4 +160,21 @@ void printMemory(page *memory, int size) {
 void printPage(page page) {
     printf("| ID: %-5d | Position in Real Memory: %-5d | Position in Swap Memory: %-5d | Relevancy: %-3d |\n", page.id,
            page.positionInRealMemory, page.positionInSwapMemory, page.relevancy);
+}
+
+void nfuaAlgorithmAnalysis(int vmSize, int rmSize, int clocks, int interactions) {
+    int i;
+    f = fopen("output.csv", "w");
+    fprintf(f, "hitCount,missCount\n");
+    for (i = 0; i < interactions; i++) {
+        initializeNFUAlgorithm(vmSize, rmSize, clocks);
+    }
+}
+
+int biasedRand(double relevancy) {
+    int random = rand() % 255;
+    if (random < relevancy + 1) {
+        return 1;
+    }
+    return 0;
 }
